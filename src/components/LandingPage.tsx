@@ -34,7 +34,7 @@ export default function LandingPage({ onOpenChatbot }: LandingPageProps) {
       <header className="bg-white shadow-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
           <div className="flex flex-wrap justify-between items-center h-auto py-2 sm:py-3 min-h-[3.5rem] sm:min-h-[4rem] gap-1 sm:gap-2">            <div className="flex items-center min-w-0 max-w-[70%] sm:max-w-none">
-              <img src="/logo-amil.png" alt="Logo Amil Seguros" className="w-20 xs:w-24 sm:w-32 h-auto object-contain" />
+              <img src="/logo-amil.png" alt="Logo Amil Seguros" className="w-20 xs:w-24 sm:w-32 h-auto object-contain rounded-lg" />
               <span className="ml-1 sm:ml-2 text-xs xs:text-sm sm:text-xl font-bold text-gray-900 truncate">Planos Empresariais</span>
             </div>
             <nav className="hidden md:flex flex-wrap space-x-4 sm:space-x-8 mt-2 md:mt-0">              

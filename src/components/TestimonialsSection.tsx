@@ -8,24 +8,24 @@ interface Testimonial {
 
 const testimonials: Testimonial[] = [
   {
-    text: "Após contratar o plano empresarial da Amil Seguros, nossa taxa de absenteísmo caiu 22%. A ampla rede credenciada e o programa Amil Resgate para emergências proporcionam uma segurança incrível para todos os nossos colaboradores.",
-    name: "Ricardo Martins",
-    role: "Diretor Administrativo, TechPoint Sistemas",
+    text: "Após implementar o plano empresarial da Amil, notamos uma melhoria significativa na satisfação dos colaboradores. O Amil Espaço Saúde próximo à nossa sede facilita o acesso a consultas e exames, reduzindo o tempo de ausência no trabalho.",
+    name: "Roberto Silva",
+    role: "Diretor de RH, Tecnova Sistemas",
   },
   {
-    text: "Como gestor de RH, posso afirmar que a parceria com a Amil Seguros foi um divisor de águas para nossa empresa. A facilidade de gestão do plano, a telemedicina e a satisfação dos funcionários são diferenciais notáveis.",
-    name: "Amanda Souza",
-    role: "Gerente de RH, Grupo Conexão",
+    text: "O que mais valorizamos na parceria com a Amil é o aplicativo que simplifica a gestão do plano. Os colaboradores conseguem marcar consultas, acessar resultados de exames e utilizar a telemedicina, especialmente útil durante períodos de maior demanda.",
+    name: "Fernanda Almeida",
+    role: "Gerente Administrativa, Grupo Nexus",
   },
   {
-    text: "O que mais me impressionou no plano empresarial da Amil foi a agilidade no atendimento e a extensa rede de hospitais. Nossa equipe tem acesso a hospitais de referência e o aplicativo simplificou todos os processos administrativos.",
-    name: "Carlos Mendonça",
-    role: "CEO, Construtora Horizonte",
+    text: "A abrangência da rede credenciada da Amil foi determinante na nossa escolha. Como temos unidades em diferentes regiões do país, precisávamos de uma operadora com cobertura nacional e atendimento de qualidade em todas as localidades.",
+    name: "Paulo Mendes",
+    role: "CEO, Construtora Integra",
   },
   {
-    text: "Após cotação com várias operadoras, escolhemos a Amil Seguros pela melhor relação custo-benefício e cobertura odontológica integrada. Hoje, 95% dos nossos colaboradores classificam o plano como excelente nas pesquisas internas de satisfação.",
-    name: "Mariana Oliveira",
-    role: "Diretora Financeira, Grupo Inovar",
+    text: "Os programas de medicina preventiva da Amil têm sido fundamentais para promover a saúde e bem-estar dos nossos colaboradores. Realizamos campanhas internas em parceria com a operadora e observamos redução nas licenças médicas por doenças evitáveis.",
+    name: "Carolina Torres",
+    role: "Diretora de Pessoas, Grupo Innovare",
   },
 ];
 

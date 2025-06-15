@@ -5,7 +5,8 @@ export default function DifferentialsSection() {
     <section id="diferenciais" className="py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <div>            <h2 className="text-4xl font-bold text-gray-900 mb-6">
+          <div>
+            <h2 className="text-4xl font-bold text-gray-900 mb-6">
               Os Diferenciais da Amil Saúde
             </h2>
             <div className="space-y-6">
@@ -15,11 +16,11 @@ export default function DifferentialsSection() {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    Ampla Rede Credenciada
+                    Estrutura Própria de Atendimento
                   </h3>
                   <p className="text-gray-600">
-                    Mais de 31.000 prestadores credenciados em todo Brasil, com hospitais, laboratórios 
-                    e clínicas de referência para atendimento de qualidade em todas as regiões do país.
+                    31 unidades hospitalares próprias, mais de 80 unidades ambulatoriais, incluindo os centros médicos 
+                    Amil Espaço Saúde com atendimento multidisciplinar exclusivo para beneficiários.
                   </p>
                 </div>
               </div>
@@ -32,8 +33,8 @@ export default function DifferentialsSection() {
                     Amil Resgate e Telemedicina
                   </h3>
                   <p className="text-gray-600">
-                    Serviço de resgate de emergência, consultas online com médicos e outros profissionais de saúde, aplicativo exclusivo com carteirinha digital, 
-                    reembolso 100% digital e agendamento online para maior comodidade.
+                    Serviço pioneiro de UTIs móveis em operação desde 1993, com equipamentos de última geração e profissionais 
+                    altamente qualificados para atendimento de emergências e remoções.
                   </p>
                 </div>
               </div>
@@ -43,33 +44,42 @@ export default function DifferentialsSection() {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    Programas de Medicina Preventiva
+                    CuidadosMil - Programas Especializados
                   </h3>
                   <p className="text-gray-600">
-                    Programas como "Amil Total Care", "Amil Resolve" e ações de medicina preventiva para promoção 
-                    da saúde e melhor qualidade de vida dos colaboradores da sua empresa.
+                    Programas de saúde especializados em cardiologia, endocrinologia, saúde mental, ortopedia, 
+                    oncologia e outras especialidades, com foco em prevenção e tratamento integrado.
                   </p>
                 </div>
               </div>
             </div>
-          </div>          <div className="bg-gradient-to-br from-amil-blue to-amil-light-blue rounded-2xl p-8 text-white">
-            <h3 className="text-2xl font-bold mb-6">Números que Impressionam</h3>
+          </div>
+          <div className="bg-gradient-to-br from-amil-blue to-amil-light-blue rounded-2xl p-8 text-white">
+            <h3 className="text-2xl font-bold mb-6">Amil em Números</h3>
             <div className="grid grid-cols-2 gap-6">
               <div className="text-center">
-                <div className="text-3xl font-bold mb-2">45+</div>
+                <div className="text-3xl font-bold mb-2">47</div>
                 <div className="text-blue-200">Anos de História</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold mb-2">5.6 milhões+</div>
+                <div className="text-3xl font-bold mb-2">5.4 milhões</div>
                 <div className="text-blue-200">Beneficiários em Saúde</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold mb-2">31.000+</div>
-                <div className="text-blue-200">Prestadores Credenciados</div>
+                <div className="text-3xl font-bold mb-2">+508 mil</div>
+                <div className="text-blue-200">Empresas Clientes</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold mb-2">5.800+</div>
-                <div className="text-blue-200">Municípios Atendidos</div>
+                <div className="text-3xl font-bold mb-2">+21 mil</div>
+                <div className="text-blue-200">Médicos e Serviços</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold mb-2">+1.5 mil</div>
+                <div className="text-blue-200">Hospitais Credenciados</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold mb-2">7</div>
+                <div className="text-blue-200">Centros de Excelência</div>
               </div>
             </div>
           </div>
