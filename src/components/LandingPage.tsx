@@ -37,7 +37,8 @@ export default function LandingPage({ onOpenChatbot }: LandingPageProps) {
               <img src="/logo-amil.png" alt="Logo Amil Seguros" className="w-20 xs:w-24 sm:w-32 h-auto object-contain" />
               <span className="ml-1 sm:ml-2 text-xs xs:text-sm sm:text-xl font-bold text-gray-900 truncate">Planos Empresariais</span>
             </div>
-            <nav className="hidden md:flex flex-wrap space-x-4 sm:space-x-8 mt-2 md:mt-0">              <a href="#beneficios" className="text-gray-700 hover:text-amil-blue text-sm sm:text-base">Benefícios</a>
+            <nav className="hidden md:flex flex-wrap space-x-4 sm:space-x-8 mt-2 md:mt-0">              
+              <a href="#beneficios" className="text-gray-700 hover:text-amil-blue text-sm sm:text-base">Benefícios</a>
               <a href="#diferenciais" className="text-gray-700 hover:text-amil-blue text-sm sm:text-base">Diferenciais</a>
               <a href="#depoimentos" className="text-gray-700 hover:text-amil-blue text-sm sm:text-base">Depoimentos</a>
               <a href="#contato" className="text-gray-700 hover:text-amil-blue text-sm sm:text-base">Contato</a>
