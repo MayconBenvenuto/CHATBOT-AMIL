@@ -54,8 +54,7 @@ export default function LandingPage({ onOpenChatbot }: LandingPageProps) {
           </div>
         </div>
       </header>
-      {/* Hero Section */}
-      <section className="bg-cover bg-center bg-no-repeat relative text-white py-6 xs:py-8 sm:py-12 md:py-20" style={{ backgroundImage: "url('/edf-amil.png')" }}>
+      {/* Hero Section */}      <section className="bg-cover bg-center bg-no-repeat relative text-white py-6 xs:py-8 sm:py-12 md:py-20" style={{ backgroundImage: "url('/edf-amil.png')" }}>
         <div className="absolute inset-0 bg-black opacity-65"></div>
         <div className="max-w-7xl mx-auto px-3 xs:px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 xs:gap-5 sm:gap-8 md:gap-12 items-center">
