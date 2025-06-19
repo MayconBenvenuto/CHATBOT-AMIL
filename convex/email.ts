@@ -48,6 +48,12 @@ export const sendLeadEmail = action({
       
       console.log("[sendLeadEmail] Dados do lead obtidos com sucesso:", JSON.stringify(lead));
 
+      // Verifica se é um lead do formulário rápido
+      const isQuickFormLead = lead.email.includes("quickform_") || lead.email.includes("@lead.capture");
+      const leadType = isQuickFormLead ? "FORMULÁRIO RÁPIDO" : "CHATBOT COMPLETO";
+      
+      console.log(`[sendLeadEmail] Tipo de lead identificado: ${leadType}`);
+
       let dadosEmpresa = null;
       let dadosEmpresaHtml = "";
 
@@ -100,38 +106,59 @@ export const sendLeadEmail = action({
         <html>
         <head>
           <meta charset="utf-8">
-          <title>🔥 NOVO LEAD QUALIFICADO - ${lead.nome}</title>
+          <title>${isQuickFormLead ? "⚡ LEAD RÁPIDO" : "🔥 LEAD QUALIFICADO"} - ${lead.nome}</title>
           <style>
             body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f4f4f4; margin: 0; padding: 0; }
             .container { max-width: 700px; margin: 20px auto; padding: 20px; background-color: #ffffff; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-            .header { background: linear-gradient(135deg, #004a80, #00adef); color: white; padding: 25px; text-align: center; border-radius: 8px 8px 0 0; }
+            .header { background: linear-gradient(135deg, ${isQuickFormLead ? "#ff6b35, #f7931e" : "#004a80, #00adef"}); color: white; padding: 25px; text-align: center; border-radius: 8px 8px 0 0; }
             .header h1 { margin: 0; font-size: 24px; }
             .header h2 { margin: 5px 0 0; font-size: 20px; font-weight: normal; }
             .content { padding: 25px; }
-            .section { margin-bottom: 25px; background-color: #f9f9f9; padding: 20px; border-radius: 8px; border-left: 5px solid #004a80; }
-            .section h3 { color: #004a80; border-bottom: 2px solid #eeeeee; padding-bottom: 8px; margin-top: 0; font-size: 18px; }
+            .section { margin-bottom: 25px; background-color: #f9f9f9; padding: 20px; border-radius: 8px; border-left: 5px solid ${isQuickFormLead ? "#ff6b35" : "#004a80"}; }
+            .section h3 { color: ${isQuickFormLead ? "#ff6b35" : "#004a80"}; border-bottom: 2px solid #eeeeee; padding-bottom: 8px; margin-top: 0; font-size: 18px; }
             .info-item { margin-bottom: 10px; font-size: 15px; }
             .footer { text-align: center; padding: 20px; color: #777; font-size: 12px; }
             .whatsapp-button { text-decoration: none; background-color: #25D366; color: white !important; padding: 10px 18px; border-radius: 25px; font-weight: bold; display: inline-block; margin-left: 15px; }
+            .lead-type { background-color: ${isQuickFormLead ? "#fff3cd" : "#d1ecf1"}; color: ${isQuickFormLead ? "#856404" : "#0c5460"}; padding: 10px; border-radius: 5px; text-align: center; margin-bottom: 20px; font-weight: bold; }
           </style>
         </head>
         <body>
           <div class="container">
             <div class="header">
-              <h1>🔥 NOVO LEAD QUALIFICADO</h1>
+              <h1>${isQuickFormLead ? "⚡ NOVO LEAD RÁPIDO" : "🔥 NOVO LEAD QUALIFICADO"}</h1>
               <h2>${lead.nome}</h2>
             </div>
             <div class="content">
+              <div class="lead-type">
+                📋 ORIGEM: ${leadType}
+                ${isQuickFormLead ? " - REQUER QUALIFICAÇÃO" : " - PRÉ-QUALIFICADO"}
+              </div>
+              
               <div class="section">
                 <h3>👤 Dados de Contato</h3>
                 <div class="info-item"><strong>Nome:</strong> ${lead.nome}</div>
-                <div class="info-item"><strong>E-mail:</strong> ${lead.email}</div>
+                ${isQuickFormLead ? "" : `<div class="info-item"><strong>E-mail:</strong> ${lead.email}</div>`}
                 <div class="info-item" style="display: flex; align-items: center; justify-content: space-between;">
                   <span><strong>WhatsApp:</strong> ${lead.whatsapp}</span>
                   <a href="${whatsappLink}" target="_blank" class="whatsapp-button">Conversar</a>
                 </div>
               </div>
               
+              ${isQuickFormLead ? `
+              <div class="section">
+                <h3>⚡ Informações do Formulário Rápido</h3>
+                <div class="info-item"><strong>🏢 Empresa:</strong> ${lead.nome.includes('(') ? lead.nome.split('(')[1].replace(')', '') : 'Não informado'}</div>
+                <div class="info-item" style="background-color: #fff3cd; padding: 10px; border-radius: 5px; margin-top: 15px;">
+                  <strong>📞 AÇÃO REQUERIDA:</strong> Este lead precisa ser qualificado via telefone/WhatsApp para obter mais informações sobre:
+                  <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li>Número de funcionários</li>
+                    <li>CNPJ da empresa</li>
+                    <li>Situação atual do plano de saúde</li>
+                    <li>Necessidades específicas</li>
+                  </ul>
+                </div>
+              </div>
+              ` : `
               <div class="section">
                 <h3>📋 Perfil Inicial</h3>
                 <div class="info-item"><strong>Possui CNPJ:</strong> ${lead.temCnpj ? "✅ SIM" : "❌ NÃO"}</div>
@@ -149,9 +176,11 @@ export const sendLeadEmail = action({
                 ${lead.maiorDificuldade ? `<div class="info-item"><strong>Principal Dificuldade:</strong> ${lead.maiorDificuldade}</div>` : ""}
                 ${lead.interessePlano ? `<div class="info-item"><strong>Interesse no plano:</strong> ${lead.interessePlano}</div>` : ""}
               </div>
+              `}
             </div>
             <div class="footer">
               <p>Lead capturado em: ${new Date(lead._creationTime).toLocaleString("pt-BR", { timeZone: 'America/Sao_Paulo' })}</p>
+              <p><strong>Origem:</strong> ${leadType}</p>
             </div>
           </div>
         </body>
@@ -168,7 +197,7 @@ export const sendLeadEmail = action({
         const emailResponse = await resend.emails.send({
           from: emailFrom,
           to: emailDestination,
-          subject: `🔥 Lead PME Qualificado: ${lead.nome} ${lead.temCnpj ? `(${dadosEmpresa?.nome_fantasia || lead.numeroCnpj})` : ''}`,
+          subject: `${isQuickFormLead ? "⚡ Lead Rápido" : "🔥 Lead Qualificado"}: ${lead.nome} ${isQuickFormLead ? "(Requer Qualificação)" : (lead.temCnpj ? `(${dadosEmpresa?.nome_fantasia || lead.numeroCnpj})` : '')}`,
           html: emailContent,
         });
         
