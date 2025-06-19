@@ -179,15 +179,47 @@ const [formData, setFormData] = useState({
 
 ## 🆘 Troubleshooting
 
-### **Se não receber emails:**
-1. Verificar variáveis de ambiente no Convex
-2. Checar logs no dashboard do Convex
-3. Confirmar configuração do Resend
+### **Se não receber emails do formulário rápido:**
+
+1. **Verificar variáveis de ambiente no Convex:**
+   - CONVEX_RESEND_API_KEY
+   - CONVEX_EMAIL_DESTINATION  
+   - CONVEX_EMAIL_FROM
+
+2. **Verificar logs no Console do navegador:**
+   ```javascript
+   // Abra o Console (F12) e procure por estas mensagens:
+   "Iniciando criação de lead do formulário rápido..."
+   "Lead criado com ID: [ID]"
+   "Disparando email para lead: [ID]"
+   "Email enviado com sucesso"
+   ```
+
+3. **Verificar logs no Dashboard do Convex:**
+   - Acesse o dashboard do Convex
+   - Vá na aba "Logs"
+   - Procure por logs com "[sendLeadEmail]"
+   - Verifique se aparecem mensagens como:
+     ```
+     [sendLeadEmail] Tipo de lead identificado: FORMULÁRIO RÁPIDO
+     [sendLeadEmail] É lead do formulário rápido? true
+     ```
+
+4. **Teste simples:**
+   - Preencha o formulário com dados de teste
+   - Nome: "Teste Formulário"
+   - Telefone: "(11) 99999-9999"  
+   - Empresa: "Empresa Teste"
+   - Verifique no console se todos os logs aparecem
 
 ### **Se houver erros no formulário:**
 1. Verificar se todos os campos estão preenchidos
 2. Testar formatação automática do telefone
 3. Checar console do navegador para erros
+
+### **Diferenças entre emails:**
+- **Chatbot**: Assunto com "🔥 Lead Qualificado" (azul)
+- **Formulário**: Assunto com "⚡ Lead Rápido" (laranja)
 
 ---
 

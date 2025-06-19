@@ -53,6 +53,8 @@ export const sendLeadEmail = action({
       const leadType = isQuickFormLead ? "FORMULÁRIO RÁPIDO" : "CHATBOT COMPLETO";
       
       console.log(`[sendLeadEmail] Tipo de lead identificado: ${leadType}`);
+      console.log(`[sendLeadEmail] Email do lead: ${lead.email}`);
+      console.log(`[sendLeadEmail] É lead do formulário rápido? ${isQuickFormLead}`);
 
       let dadosEmpresa = null;
       let dadosEmpresaHtml = "";
@@ -191,13 +193,17 @@ export const sendLeadEmail = action({
         console.log("[sendLeadEmail] Preparando para enviar e-mail:");
         console.log(`[sendLeadEmail] - De: ${emailFrom}`);
         console.log(`[sendLeadEmail] - Para: ${emailDestination}`);
-        console.log(`[sendLeadEmail] - Assunto: 🔥 Lead PME Qualificado: ${lead.nome} ${lead.temCnpj ? `(${dadosEmpresa?.nome_fantasia || lead.numeroCnpj})` : ''}`);
+        console.log(`[sendLeadEmail] - Tipo de lead: ${leadType}`);
+        console.log(`[sendLeadEmail] - É formulário rápido: ${isQuickFormLead}`);
+        
+        const emailSubject = `${isQuickFormLead ? "⚡ Lead Rápido" : "🔥 Lead Qualificado"}: ${lead.nome} ${isQuickFormLead ? "(Requer Qualificação)" : (lead.temCnpj ? `(${dadosEmpresa?.nome_fantasia || lead.numeroCnpj})` : '')}`;
+        console.log(`[sendLeadEmail] - Assunto: ${emailSubject}`);
         
         const resend = new Resend(resendApiKey);
         const emailResponse = await resend.emails.send({
           from: emailFrom,
           to: emailDestination,
-          subject: `${isQuickFormLead ? "⚡ Lead Rápido" : "🔥 Lead Qualificado"}: ${lead.nome} ${isQuickFormLead ? "(Requer Qualificação)" : (lead.temCnpj ? `(${dadosEmpresa?.nome_fantasia || lead.numeroCnpj})` : '')}`,
+          subject: emailSubject,
           html: emailContent,
         });
         

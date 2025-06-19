@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useMutation } from "convex/react";
+import { useMutation, useAction } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Phone, Building, User, Send } from "lucide-react";
 
@@ -17,6 +17,7 @@ export default function QuickLeadForm({ source: _source = "landing-page" }: Quic
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const createLead = useMutation(api.leads.createLead);
+  const sendEmail = useAction(api.email.sendLeadEmail);
 
   // Função para formatar telefone automaticamente
   const formatPhone = (value: string) => {
@@ -42,13 +43,33 @@ export default function QuickLeadForm({ source: _source = "landing-page" }: Quic
     }
 
     setIsSubmitting(true);    try {
-      // Cria o lead no Convex com dados do formulário rápido
-      await createLead({
+      console.log("Iniciando criação de lead do formulário rápido...");
+      console.log("Dados do formulário:", formData);
+      
+      const leadData = {
         nome: `${formData.nome} (${formData.empresa})`, // Inclui empresa no nome
         whatsapp: formData.telefone,
         email: `quickform_${formData.telefone.replace(/\D/g, "")}@lead.capture`, // Email fictício identificável
         temCnpj: true, // Assumimos que empresa tem CNPJ
-      });
+      };
+      
+      console.log("Dados que serão enviados para o Convex:", leadData);
+      
+      // Cria o lead no Convex com dados do formulário rápido
+      const leadId = await createLead(leadData);
+
+      console.log("Lead criado com ID:", leadId);
+
+      // Dispara o email automaticamente
+      console.log("Disparando email para lead:", leadId);
+      try {
+        const emailResult = await sendEmail({ leadId });
+        console.log("Email enviado com sucesso para lead:", leadId);
+        console.log("Resultado do email:", emailResult);
+      } catch (emailError) {
+        console.error("Erro ao enviar email:", emailError);
+        // Não falha o formulário se o email der erro
+      }
 
       setIsSubmitted(true);
       
