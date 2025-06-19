@@ -3,7 +3,6 @@ import DifferentialsSection from "./DifferentialsSection";
 import TestimonialsSection from "./TestimonialsSection";
 import CTASection from "./CTASection";
 import Footer from "./Footer";
-import QuickLeadForm from "./QuickLeadForm";
 import { CheckCircle } from "lucide-react";
 
 interface LandingPageProps {
@@ -101,13 +100,6 @@ export default function LandingPage({ onOpenChatbot }: LandingPageProps) {  // F
             </div>
           </div>
         </div>      </section>
-
-      {/* Formulário de Captura Rápida */}
-      <section className="py-12 bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <QuickLeadForm source="landing-hero" />
-        </div>
-      </section>
 
       {/* Benefícios */}
       <BenefitsSection />

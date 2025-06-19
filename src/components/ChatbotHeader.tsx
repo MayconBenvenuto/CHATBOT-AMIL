@@ -12,7 +12,7 @@ export default function ChatbotHeader({ onClose, progress }: ChatbotHeaderProps)
             <Heart className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h3 className="font-semibold">Ana - Assistente Amil</h3>
+            <h3 className="font-semibold">Davi - Assistente Amil</h3>
             <p className="text-sm text-blue-100">Online agora</p>
           </div>
         </div>

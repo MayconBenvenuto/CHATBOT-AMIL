@@ -68,7 +68,7 @@ const initialState: ChatState = {
   messages: [
     {
       type: "bot",
-      text: "👋 Olá! Sou o Ana, assistente virtual da Amil Seguros. Vou te ajudar a encontrar o melhor plano PME para sua empresa!",
+      text: "👋 Olá! Sou o Davi, assistente virtual da Amil Seguros. Vou te ajudar a encontrar o melhor plano PME para sua empresa!",
     },
   ],
   isTyping: false,
@@ -232,7 +232,7 @@ export default function Chatbot({ onClose }: ChatbotProps) {
         ]
       };    // Removido case "interesse_plano"
     case "finalizado": 
-      return { text: `🎉 Perfeito, ${data.nome}! Recebi todas as informações. Nossa equipe analisará seu perfil e entrará em contato em até 24 horas com as melhores opções para sua empresa. Obrigada!` };
+      return { text: `🎉 Perfeito, ${data.nome}! Recebi todas as informações. Nossa equipe analisará seu perfil e entrará em contato em até 24 horas com as melhores opções para sua empresa. Obrigado!` };
     default: 
       return { text: "" };
   }
