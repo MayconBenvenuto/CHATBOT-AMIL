@@ -10,10 +10,9 @@ interface LandingPageProps {
   onOpenChatbot: () => void;
 }
 
-export default function LandingPage({ onOpenChatbot }: LandingPageProps) {
-  // Função para abrir o WhatsApp com mensagem predefinida
+export default function LandingPage({ onOpenChatbot }: LandingPageProps) {  // Função para abrir o WhatsApp com mensagem predefinida
   const openWhatsApp = () => {
-    const phone = "5581988242023"; // Formato: código do país + DDD + número
+    const phone = "5581992998558"; // Formato: código do país + DDD + número
     const message = encodeURIComponent("Olá! Gostaria de mais informações e valores dos planos Amil..");
     window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
   };
