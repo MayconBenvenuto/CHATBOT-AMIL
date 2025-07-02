@@ -355,6 +355,16 @@ export default function Chatbot({ onClose }: ChatbotProps) {
           console.log("Resultado do envio de email:", emailResult);
           
           if (emailResult.success) {
+            // Dispara evento do Facebook Pixel para lead qualificado
+            if (typeof window !== 'undefined' && (window as any).fbq) {
+              (window as any).fbq('track', 'LeadQualificado', {
+                content_category: 'Lead Completo',
+                content_name: 'Chatbot Finalizado com Sucesso',
+                value: 50,
+                currency: 'BRL'
+              });
+            }
+            
             toast.success("✅ Informações enviadas com sucesso! Em breve nosso consultor entrará em contato.");
           } else {
             throw new Error("Falha ao enviar e-mail");
@@ -369,6 +379,16 @@ export default function Chatbot({ onClose }: ChatbotProps) {
             sendEmail({ leadId: finalLeadId })
               .then(retryResult => {
                 if (retryResult.success) {
+                  // Dispara evento do Facebook Pixel para lead qualificado (retry)
+                  if (typeof window !== 'undefined' && (window as any).fbq) {
+                    (window as any).fbq('track', 'LeadQualificado', {
+                      content_category: 'Lead Completo',
+                      content_name: 'Chatbot Finalizado - Segunda Tentativa',
+                      value: 50,
+                      currency: 'BRL'
+                    });
+                  }
+                  
                   toast.success("✅ E-mail enviado com sucesso na segunda tentativa!");
                 } else {
                   toast.error("❌ Não foi possível enviar o e-mail. Nossa equipe foi notificada e entrará em contato em breve.");
