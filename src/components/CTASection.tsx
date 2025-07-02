@@ -1,4 +1,20 @@
-export default function CTASection({ onOpenChatbot }: { onOpenChatbot: () => void }) {  return (    <section className="py-20 bg-amil-blue">
+export default function CTASection({ onOpenChatbot }: { onOpenChatbot: () => void }) {
+  // Função para abrir chatbot com tracking do Facebook Pixel
+  const handleOpenChatbot = () => {
+    // Dispara evento do Facebook Pixel
+    if (typeof window !== 'undefined' && (window as any).fbq) {
+      (window as any).fbq('track', 'Lead', {
+        content_category: 'Chatbot',
+        content_name: 'Botão CTA Section',
+        value: 15,
+        currency: 'BRL'
+      });
+    }
+    
+    onOpenChatbot();
+  };
+
+  return (    <section className="py-20 bg-amil-blue">
       <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
         <h2 className="text-4xl font-bold text-white mb-6">
           Pronto para Transformar a Saúde da sua Empresa?
@@ -8,8 +24,11 @@ export default function CTASection({ onOpenChatbot }: { onOpenChatbot: () => voi
           oferecer o melhor plano de saúde para sua PME.
         </p>
         <button
-          onClick={onOpenChatbot}
+          onClick={handleOpenChatbot}
           className="bg-white text-amil-blue px-12 py-4 rounded-lg hover:bg-gray-100 transition-colors font-bold text-lg"
+          data-testid="solicitar-cotacao-cta"
+          data-fb-track="lead"
+          id="cta-button"
         >
           Solicitar Cotação Gratuita
         </button>
