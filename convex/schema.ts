@@ -16,6 +16,7 @@ const applicationTables = {
     valorPlanoAtual: v.optional(v.string()),
     maiorDificuldade: v.optional(v.string()),
     interessePlano: v.optional(v.string()), // Novo campo para interesse do lead
+    idadesBeneficiarios: v.optional(v.string()),
     status: v.string(), // "em_andamento", "completo", "enviado"
     
     // --- MUDANÇA AQUI ---

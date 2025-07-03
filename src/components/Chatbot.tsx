@@ -20,6 +20,7 @@ type ChatStep =
   | "nome_plano"
   | "valor_plano"
   | "dificuldade"
+  | "idades_beneficiarios"
   | "numero_cnpj" // Movido para ser a última pergunta
   | "finalizado";
 
@@ -35,6 +36,7 @@ interface ChatData {
   nomePlanoAtual: string;
   valorPlanoAtual: string;
   maiorDificuldade: string;
+  idadesBeneficiarios: string;
 }
 
 interface Message {
@@ -175,7 +177,8 @@ export default function Chatbot({ onClose }: ChatbotProps) {
       case "plano_atual": return data.temPlanoAtual ? "nome_plano" : "dificuldade";
       case "nome_plano": return "valor_plano";
       case "valor_plano": return "dificuldade";
-      case "dificuldade": return "numero_cnpj"; // Mudou: agora pergunta CNPJ por último
+      case "dificuldade": return "idades_beneficiarios";
+      case "idades_beneficiarios": return "numero_cnpj";
       case "numero_cnpj": return "finalizado"; // Mudou: CNPJ leva ao final
       default: return "finalizado";
     }
@@ -207,6 +210,10 @@ export default function Chatbot({ onClose }: ChatbotProps) {
           "Outro"
         ]
       };
+    case "idades_beneficiarios":
+      return {
+        text: "👨‍👩‍👧‍👦 Para calcular a cotação, preciso saber as idades dos beneficiários que utilizarão o plano. Digite as idades separadas por vírgula (Ex: 32, 28, 5, 2):"
+      };
     case "numero_cnpj":
       return { text: "🏢 Para finalizar, qual é o CNPJ da sua empresa? (Opcional - pode pular se preferir)" };
     case "finalizado": 
@@ -228,6 +235,10 @@ export default function Chatbot({ onClose }: ChatbotProps) {
         // Desativado: aceita qualquer entrada, inclusive vazia
         return true; // Sempre válido agora
       }
+      case "idades_beneficiarios": {
+        const agesPattern = /^(\d+)(\s*,\s*\d+)*$/;
+        return agesPattern.test(value.trim());
+      }
       case "valor_plano":
         return /\d+/.test(value);
       default:
@@ -239,6 +250,7 @@ export default function Chatbot({ onClose }: ChatbotProps) {
         case "nome": return "Digite seu nome completo...";
         case "whatsapp": return "(11) 99999-9999";
         case "numero_cnpj": return "00.000.000/0000-00";
+        case "idades_beneficiarios": return "Ex: 32, 28, 5, 2";
         case "valor_plano": return "R$ 0,00";
         default: return "Digite sua resposta...";
     }
@@ -271,7 +283,9 @@ export default function Chatbot({ onClose }: ChatbotProps) {
       case "numero_cnpj": newData.numeroCnpj = value; break;
       case "plano_atual": newData.temPlanoAtual = value.toLowerCase() === "sim"; break;
       case "nome_plano": newData.nomePlanoAtual = value; break;
-      case "valor_plano": newData.valorPlanoAtual = value; break;      case "dificuldade": newData.maiorDificuldade = value; break;
+      case "valor_plano": newData.valorPlanoAtual = value; break;
+      case "idades_beneficiarios": newData.idadesBeneficiarios = value; break;
+      case "dificuldade": newData.maiorDificuldade = value; break;
     }
 
     const nextStep = getNextStep(step, newData);
@@ -321,6 +335,7 @@ export default function Chatbot({ onClose }: ChatbotProps) {
           nomePlanoAtual: newData.nomePlanoAtual,
           valorPlanoAtual: newData.valorPlanoAtual,
           maiorDificuldade: newData.maiorDificuldade,
+          idadesBeneficiarios: newData.idadesBeneficiarios,
           status: step === "numero_cnpj" ? "completo" : "em_andamento", // Mudou: agora a conclusão é na etapa do CNPJ
         });
       }
@@ -341,6 +356,7 @@ export default function Chatbot({ onClose }: ChatbotProps) {
           nomePlanoAtual: newData.nomePlanoAtual,
           valorPlanoAtual: newData.valorPlanoAtual,
           maiorDificuldade: newData.maiorDificuldade,
+          idadesBeneficiarios: newData.idadesBeneficiarios,
         });
         
         // Adicionamos um pequeno delay para garantir que a atualização foi concluída
@@ -417,12 +433,13 @@ export default function Chatbot({ onClose }: ChatbotProps) {
       case "nome_plano": return "📝";
       case "valor_plano": return "💰";
       case "dificuldade": return "🤔";
+      case "idades_beneficiarios": return "👨‍👩‍👧‍👦";
       case "finalizado": return "🎉";
       default: return "💬";
     }
   };
   const getProgressPercentage = () => {
-    const steps = ["nome", "whatsapp", "plano_atual", "nome_plano", "valor_plano", "dificuldade", "numero_cnpj", "finalizado"];
+    const steps = ["nome", "whatsapp", "plano_atual", "nome_plano", "valor_plano", "dificuldade", "idades_beneficiarios", "numero_cnpj", "finalizado"];
     const currentIndex = steps.indexOf(step);
     return Math.round((currentIndex / (steps.length - 1)) * 100);
   };
