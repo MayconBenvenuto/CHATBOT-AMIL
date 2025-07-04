@@ -37,6 +37,8 @@ interface ChatData {
   valorPlanoAtual: string;
   maiorDificuldade: string;
   idadesBeneficiarios: string;
+  cidade?: string;
+  estado?: string;
 }
 
 interface Message {
@@ -60,6 +62,7 @@ type ChatAction =
   | { type: "SET_IS_TYPING"; payload: boolean }
   | { type: "ADD_MESSAGE"; payload: Message }
   | { type: "SET_LEAD_ID"; payload: Id<"leads"> }
+  | { type: "SET_LOCATION"; payload: { cidade: string; estado: string } }
   | { type: "PROCEED_STEP"; payload: { nextStep: ChatStep; newData: Partial<ChatData> } };
 
 const initialState: ChatState = {
@@ -86,6 +89,15 @@ function chatReducer(state: ChatState, action: ChatAction): ChatState {
       return { ...state, messages: [...state.messages, action.payload] };
     case "SET_LEAD_ID":
       return { ...state, leadId: action.payload };
+    case "SET_LOCATION":
+      return {
+        ...state,
+        chatData: {
+          ...state.chatData,
+          cidade: action.payload.cidade,
+          estado: action.payload.estado,
+        },
+      };
     case "PROCEED_STEP":
       return {
         ...state,
@@ -115,12 +127,40 @@ export default function Chatbot({ onClose }: ChatbotProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // Função para buscar localização via IP
+  const fetchLocation = async () => {
+    try {
+      const response = await fetch("https://ipapi.co/json/");
+      const data = await response.json();
+      const { city, region_code } = data;
+      if (city && region_code) {
+        dispatch({
+          type: "SET_LOCATION",
+          payload: { cidade: city, estado: region_code },
+        });
+        if ((window as any).fbq) {
+          (window as any).fbq("track", "FindLocation", {
+            city,
+            region: region_code,
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Erro ao buscar localização:", error);
+    }
+  };
+
   useEffect(() => {
     scrollToBottom();
     if (inputRef.current) {
       inputRef.current.focus();
     }
   }, [messages]);
+
+  // useEffect para capturar localização automaticamente
+  useEffect(() => {
+    void fetchLocation();
+  }, []);
 
   const addBotMessage = (text: string, options?: string[]) => {
     dispatch({ type: "SET_IS_TYPING", payload: true });
@@ -322,7 +362,11 @@ export default function Chatbot({ onClose }: ChatbotProps) {
           dadosEmpresa: newData.dadosEmpresa, // Incluindo dados da empresa
           temPlanoAtual: newData.temPlanoAtual,
           nomePlanoAtual: newData.nomePlanoAtual,
-          valorPlanoAtual: newData.valorPlanoAtual,          maiorDificuldade: newData.maiorDificuldade,
+          valorPlanoAtual: newData.valorPlanoAtual,
+          maiorDificuldade: newData.maiorDificuldade,
+          idadesBeneficiarios: newData.idadesBeneficiarios,
+          cidade: newData.cidade,
+          estado: newData.estado,
           status: step === "dificuldade" ? "completo" : "em_andamento", // Atualizado: agora a conclusão é na etapa "dificuldade"
         });
         
@@ -336,6 +380,8 @@ export default function Chatbot({ onClose }: ChatbotProps) {
           valorPlanoAtual: newData.valorPlanoAtual,
           maiorDificuldade: newData.maiorDificuldade,
           idadesBeneficiarios: newData.idadesBeneficiarios,
+          cidade: newData.cidade,
+          estado: newData.estado,
           status: step === "numero_cnpj" ? "completo" : "em_andamento", // Mudou: agora a conclusão é na etapa do CNPJ
         });
       }
@@ -350,13 +396,16 @@ export default function Chatbot({ onClose }: ChatbotProps) {
         console.log("Finalizando fluxo do chatbot com leadId:", currentLeadId);        await updateLead({
           leadId: currentLeadId,
           status: "completo",
-          // Garantimos que todas as informações estejam atualizadas          enquadramentoCnpj: newData.enquadramentoCnpj,
+          // Garantimos que todas as informações estejam atualizadas          
+          enquadramentoCnpj: newData.enquadramentoCnpj,
           numeroCnpj: newData.numeroCnpj,
           temPlanoAtual: newData.temPlanoAtual,
           nomePlanoAtual: newData.nomePlanoAtual,
           valorPlanoAtual: newData.valorPlanoAtual,
           maiorDificuldade: newData.maiorDificuldade,
           idadesBeneficiarios: newData.idadesBeneficiarios,
+          cidade: newData.cidade,
+          estado: newData.estado,
         });
         
         // Adicionamos um pequeno delay para garantir que a atualização foi concluída

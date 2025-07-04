@@ -139,7 +139,13 @@ export const sendLeadEmail = action({
               ${dadosEmpresaHtml}
               
               <div class="section">
-                <h3>👨‍👩‍👧‍👦 Beneficiários para Cotação</h3>
+                <h3>� Localização do Lead</h3>
+                <div class="info-item"><strong>Cidade:</strong> ${lead.cidade || 'Não informado'}</div>
+                <div class="info-item"><strong>Estado:</strong> ${lead.estado || 'Não informado'}</div>
+              </div>
+              
+              <div class="section">
+                <h3>�👨‍👩‍👧‍👦 Beneficiários para Cotação</h3>
                 ${lead.idadesBeneficiarios ? `<div class="info-item"><strong>Idades dos Beneficiários:</strong> ${lead.idadesBeneficiarios}</div>` : ""}
                 ${lead.idadesBeneficiarios ? `<div class="info-item"><strong>Total de Beneficiários:</strong> ${lead.idadesBeneficiarios.split(',').length} pessoa(s)</div>` : ""}
               </div>
