@@ -123,6 +123,21 @@ export default function Chatbot({ onClose }: ChatbotProps) {
   const updateLead = useMutation(api.leads.updateLead);
   const sendEmail = useAction(api.email.sendLeadEmail);
   
+  // Efeito para capturar o abandono do chat (lead morno)
+  useEffect(() => {
+    // A função de limpeza é executada quando o componente é desmontado (fechado)
+    return () => {
+      if (leadId && chatData.nome && chatData.whatsapp && step !== "finalizado") {
+        console.log(`[Chatbot Unmount] Lead morno detectado: ${leadId}. Enviando...`);
+        // Envia o email para o lead morno sem feedback para o usuário
+        sendEmail({ leadId, isWarmLead: true }).catch((error) => {
+          // Apenas loga o erro no console, não exibe para o usuário
+          console.error("[Chatbot Unmount] Erro ao enviar email de lead morno:", error);
+        });
+      }
+    };
+  }, [leadId, chatData, step, sendEmail]);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -308,7 +323,7 @@ export default function Chatbot({ onClose }: ChatbotProps) {
     if (!value.trim() && step !== "numero_cnpj") return; // CNPJ pode ser vazio
 
     if (!validateInput(step, value)) {
-      toast.error("Por favor, verifique o formato da informação inserida.");
+      // Removido o toast de erro de validação para uma experiência mais limpa
       return;
     }
 
@@ -387,7 +402,7 @@ export default function Chatbot({ onClose }: ChatbotProps) {
       }
     } catch (error) {
       console.error("Erro ao salvar lead:", error);
-      toast.error("Houve um problema ao salvar suas informações.");
+      // Removido toast de erro para não notificar o usuário de problemas internos
     }
     
     if (nextStep === "finalizado" && currentLeadId) {
@@ -416,54 +431,24 @@ export default function Chatbot({ onClose }: ChatbotProps) {
         toast.loading("Enviando suas informações...");
         
         try {
-          const emailResult = await sendEmail({ leadId: currentLeadId });
-          console.log("Resultado do envio de email:", emailResult);
-          
-          if (emailResult.success) {
-            // Dispara evento do Facebook Pixel para lead qualificado
-            if (typeof window !== 'undefined' && (window as any).fbq) {
-              (window as any).fbq('track', 'LeadQualificado', {
-                content_category: 'Lead Completo',
-                content_name: 'Chatbot Finalizado com Sucesso',
-                value: 50,
-                currency: 'BRL'
-              });
-            }
-            
-            toast.success("✅ Informações enviadas com sucesso! Em breve nosso consultor entrará em contato.");
-          } else {
-            throw new Error("Falha ao enviar e-mail");
+          await sendEmail({ leadId: currentLeadId });
+          console.log("E-mail para lead completo enviado com sucesso.");
+
+          // Dispara evento do Facebook Pixel para lead qualificado
+          if (typeof window !== 'undefined' && (window as any).fbq) {
+            (window as any).fbq('track', 'LeadQualificado', {
+              content_category: 'Lead Completo',
+              content_name: 'Chatbot Finalizado com Sucesso',
+              value: 50,
+              currency: 'BRL'
+            });
           }
+          
+          toast.success("✅ Informações enviadas com sucesso! Em breve nosso consultor entrará em contato.");
+
         } catch (emailError: any) {
           console.error("Erro ao enviar e-mail:", emailError);
-          toast.error(`❌ Erro ao enviar e-mail: ${emailError.message || "Erro desconhecido"}`);
-          
-          // Tentamos enviar novamente após 3 segundos
-          const finalLeadId = currentLeadId; // Capturamos o ID do lead para usar no setTimeout
-          setTimeout(() => {
-            sendEmail({ leadId: finalLeadId })
-              .then(retryResult => {
-                if (retryResult.success) {
-                  // Dispara evento do Facebook Pixel para lead qualificado (retry)
-                  if (typeof window !== 'undefined' && (window as any).fbq) {
-                    (window as any).fbq('track', 'LeadQualificado', {
-                      content_category: 'Lead Completo',
-                      content_name: 'Chatbot Finalizado - Segunda Tentativa',
-                      value: 50,
-                      currency: 'BRL'
-                    });
-                  }
-                  
-                  toast.success("✅ E-mail enviado com sucesso na segunda tentativa!");
-                } else {
-                  toast.error("❌ Não foi possível enviar o e-mail. Nossa equipe foi notificada e entrará em contato em breve.");
-                }
-              })
-              .catch(retryError => {
-                console.error("Erro na segunda tentativa de envio:", retryError);
-                toast.error("❌ Não foi possível enviar o e-mail. Nossa equipe foi notificada e entrará em contato em breve.");
-              });
-          }, 3000);
+          toast.error(`❌ Erro ao enviar e-mail: ${emailError.message || "Tente novamente"}`);
         }
       } catch (error) {
         console.error("Erro ao finalizar processo:", error);
@@ -515,7 +500,7 @@ export default function Chatbot({ onClose }: ChatbotProps) {
             isTyping={isTyping}
             inputRef={inputRef as React.RefObject<HTMLInputElement>}
             handleInputChange={handleInputChange}
-            handleSubmit={handleSubmit as (e: React.FormEvent) => void}
+            handleSubmit={(e) => { void handleSubmit(e); }}
             getInputPlaceholder={getInputPlaceholder as (step: string) => string}
             handleOptionClick={handleOptionClick}
           />

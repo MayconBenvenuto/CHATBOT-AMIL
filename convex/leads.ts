@@ -44,6 +44,18 @@ export const updateLead = mutation({
   },
 });
 
+export const updateLeadStatus = mutation({
+  args: {
+    leadId: v.id("leads"),
+    status: v.string(),
+  },
+  handler: async (ctx, { leadId, status }) => {
+    console.log(`[updateLeadStatus] Atualizando status do lead ${leadId} para:`, status);
+    await ctx.db.patch(leadId, { status });
+    console.log("[updateLeadStatus] Status atualizado com sucesso.");
+  },
+});
+
 export const getLead = query({
   args: { leadId: v.id("leads") },
   handler: async (ctx, args) => {

@@ -10,9 +10,10 @@ import { Resend } from "resend";
 export const sendLeadEmail = action({
   args: {
     leadId: v.id("leads"),
+    isWarmLead: v.optional(v.boolean()), // Adicionado para diferenciar o lead
   },
-  handler: async (ctx, args) => {
-    console.log("[sendLeadEmail] Recebida solicitação para enviar email do lead:", args.leadId);
+  handler: async (ctx, { leadId, isWarmLead }) => {
+    console.log(`[sendLeadEmail] Recebida solicitação para enviar email do lead: ${leadId}, Morno: ${!!isWarmLead}`);
     
     try {
       // Validação das variáveis de ambiente
@@ -37,47 +38,57 @@ export const sendLeadEmail = action({
       console.log("[sendLeadEmail] Variáveis de ambiente validadas com sucesso");
 
       // Busca os dados do lead no banco
-      console.log("[sendLeadEmail] Buscando dados do lead:", args.leadId);
-      const lead = await ctx.runQuery(api.leads.getLead, { leadId: args.leadId });
+      console.log("[sendLeadEmail] Buscando dados do lead:", leadId);
+      const lead = await ctx.runQuery(api.leads.getLead, { leadId: leadId });
       
       if (!lead) {
-        console.error("[sendLeadEmail] ERRO - Lead não encontrado para ID:", args.leadId);
+        console.error("[sendLeadEmail] ERRO - Lead não encontrado para ID:", leadId);
         throw new Error("Lead não encontrado");
       }
       
       console.log("[sendLeadEmail] Dados do lead obtidos com sucesso");
 
+      // --- LÓGICA PARA LEAD MORNO VS COMPLETO ---
+      const subject = isWarmLead ? "Lead Morno: Novo Contato Parcial" : "Lead Amil: Novo Contato";
+      const leadStatus = isWarmLead ? "morno" : "completo";
+
+      // Atualiza o status do lead no banco de dados
+      await ctx.runMutation(api.leads.updateLeadStatus, { leadId, status: leadStatus });
+      console.log(`[sendLeadEmail] Status do lead ${leadId} atualizado para '${leadStatus}'`);
+
       let dadosEmpresa = null;
       let dadosEmpresaHtml = "";
 
-      // Se o lead já tiver dados da empresa armazenados, usamos primeiro
-      if (lead.dadosEmpresa) {
-        dadosEmpresa = lead.dadosEmpresa;
-        console.log("[sendLeadEmail] Usando dados da empresa já armazenados");
-      }
-      // Se não tiver, mas tiver CNPJ, tentamos validar e buscar os dados
-      else if (lead.temCnpj && lead.numeroCnpj) {
-        try {
-          const cleanedCnpj = lead.numeroCnpj.replace(/\D/g, "");
-          console.log("[sendLeadEmail] Buscando dados do CNPJ:", cleanedCnpj);
-          const response = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cleanedCnpj}`);
-          if (response.ok) {
-            dadosEmpresa = await response.json();
-            // Salva os dados da empresa no banco para futuras consultas
-            await ctx.runMutation(api.leads.updateLead, {
-              leadId: args.leadId,
-              dadosEmpresa: dadosEmpresa,
-            });
-            console.log("[sendLeadEmail] Dados da empresa obtidos e salvos");
-          }
-        } catch (error) {
-          console.error("Falha ao buscar dados do CNPJ na BrasilAPI:", error);
+      // A busca de dados da empresa só faz sentido para leads completos
+      if (!isWarmLead) {
+        // Se o lead já tiver dados da empresa armazenados, usamos primeiro
+        if (lead.dadosEmpresa) {
+          dadosEmpresa = lead.dadosEmpresa;
+          console.log("[sendLeadEmail] Usando dados da empresa já armazenados");
         }
-      }
+        // Se não tiver, mas tiver CNPJ, tentamos validar e buscar os dados
+        else if (lead.temCnpj && lead.numeroCnpj) {
+          try {
+            const cleanedCnpj = lead.numeroCnpj.replace(/\D/g, "");
+            console.log("[sendLeadEmail] Buscando dados do CNPJ:", cleanedCnpj);
+            const response = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cleanedCnpj}`);
+            if (response.ok) {
+              dadosEmpresa = await response.json();
+              // Salva os dados da empresa no banco para futuras consultas
+              await ctx.runMutation(api.leads.updateLead, {
+                leadId: leadId,
+                dadosEmpresa: dadosEmpresa,
+              });
+              console.log("[sendLeadEmail] Dados da empresa obtidos e salvos");
+            }
+          } catch (error) {
+            console.error("Falha ao buscar dados do CNPJ na BrasilAPI:", error);
+          }
+        }
 
-      // Monta o HTML se houver dados da empresa
-      if (dadosEmpresa) {
-        dadosEmpresaHtml = `
+        // Monta o HTML se houver dados da empresa
+        if (dadosEmpresa) {
+          dadosEmpresaHtml = `
           <div class="section">
             <h3>🏢 Dados da Empresa (Validados)</h3>
             <div class="info-item"><strong>Razão Social:</strong> ${dadosEmpresa.razao_social || 'N/A'}</div>
@@ -89,137 +100,103 @@ export const sendLeadEmail = action({
             <div class="info-item"><strong>Data de Abertura:</strong> ${dadosEmpresa.data_inicio_atividade || 'N/A'}</div>
           </div>
         `;
+        }
       }
 
       // Preparação do link do WhatsApp e do conteúdo do e-mail
       const whatsappLink = `https://wa.me/55${lead.whatsapp.replace(/\D/g, "")}`;
+      
+      // --- CONSTRUÇÃO DO CORPO DO E-MAIL ---
+      const emailBody = isWarmLead
+        ? `
+          <h2>Lead Morno Capturado</h2>
+          <p>Este lead iniciou a conversa mas não a concluiu. Seguem os dados parciais:</p>
+          <div class="section">
+            <h3>👤 Informações de Contato</h3>
+            <div class="info-item"><strong>Nome:</strong> ${lead.nome}</div>
+            <div class="info-item"><strong>WhatsApp:</strong> <a href="${whatsappLink}">${lead.whatsapp}</a></div>
+          </div>
+        `
+        : `
+          <h2>🎉 Novo Lead Qualificado!</h2>
+          <p>Um novo lead preencheu o formulário completo.</p>
+          
+          <div class="section">
+            <h3>👤 Informações de Contato</h3>
+            <div class="info-item"><strong>Nome:</strong> ${lead.nome}</div>
+            <div class="info-item"><strong>WhatsApp:</strong> <a href="${whatsappLink}">${lead.whatsapp}</a></div>
+            <div class="info-item"><strong>Email:</strong> ${lead.email}</div>
+          </div>
+
+          <div class="section">
+            <h3>📋 Detalhes da Cotação</h3>
+            <div class="info-item"><strong>Possui CNPJ?</strong> ${lead.temCnpj ? 'Sim' : 'Não'}</div>
+            ${lead.temCnpj ? `<div class="info-item"><strong>CNPJ:</strong> ${lead.numeroCnpj}</div>` : ''}
+            <div class="info-item"><strong>Tipo de Contratação:</strong> ${lead.enquadramentoCnpj || 'N/A'}</div>
+            <div class="info-item"><strong>Possui Funcionários?</strong> ${lead.temFuncionarios ? 'Sim' : 'Não'}</div>
+            <div class="info-item"><strong>Idade dos Beneficiários:</strong> ${lead.idadesBeneficiarios || 'N/A'}</div>
+          </div>
+
+          <div class="section">
+            <h3>🏥 Plano de Saúde Atual</h3>
+            <div class="info-item"><strong>Possui plano atual?</strong> ${lead.temPlanoAtual ? 'Sim' : 'Não'}</div>
+            ${lead.temPlanoAtual ? `
+              <div class="info-item"><strong>Operadora:</strong> ${lead.nomePlanoAtual || 'N/A'}</div>
+              <div class="info-item"><strong>Valor Mensal:</strong> ${lead.valorPlanoAtual || 'N/A'}</div>
+              <div class="info-item"><strong>Maior Dificuldade:</strong> ${lead.maiorDificuldade || 'N/A'}</div>
+            ` : ''}
+          </div>
+          
+          ${dadosEmpresaHtml}
+        `;
+
       const emailContent = `
         <!DOCTYPE html>
         <html>
         <head>
           <meta charset="utf-8">
-          <title>🔥 LEAD QUALIFICADO - ${lead.nome}</title>
+          <title>${subject}</title>
           <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f4f4f4; margin: 0; padding: 0; }
-            .container { max-width: 700px; margin: 20px auto; padding: 20px; background-color: #ffffff; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-            .header { background: linear-gradient(135deg, #004a80, #004a80); color: white; padding: 25px; text-align: center; border-radius: 8px 8px 0 0; }
-            .header h1 { margin: 0; font-size: 24px; }
-            .header h2 { margin: 5px 0 0; font-size: 20px; font-weight: normal; }
-            .content { padding: 25px; }
-            .section { margin-bottom: 25px; background-color: #f9f9f9; padding: 20px; border-radius: 8px; border-left: 5px solid #004a80; }
-            .section h3 { color: #004a80; border-bottom: 2px solid #eeeeee; padding-bottom: 8px; margin-top: 0; font-size: 18px; }
-            .info-item { margin-bottom: 10px; font-size: 15px; }
-            .footer { text-align: center; padding: 20px; color: #777; font-size: 12px; }
-            .whatsapp-button { text-decoration: none; background-color: #25D366; color: white !important; padding: 10px 18px; border-radius: 25px; font-weight: bold; display: inline-block; margin-left: 15px; }
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background-color: #f4f7f6; margin: 0; padding: 20px; }
+            .container { max-width: 700px; margin: 0 auto; padding: 20px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+            .header { border-bottom: 2px solid #eeeeee; padding-bottom: 10px; margin-bottom: 20px; }
+            .header h1 { margin: 0; font-size: 22px; color: #004a80; }
+            .header p { margin: 5px 0 0; font-size: 16px; color: #666; }
+            .section { margin-bottom: 20px; padding: 15px; border-radius: 8px; background-color: #f9f9f9; border-left: 5px solid #004a80; }
+            .section h3 { margin-top: 0; font-size: 18px; color: #004a80; }
+            .info-item { margin-bottom: 8px; }
+            .info-item strong { color: #0056b3; }
+            a { color: #007bff; text-decoration: none; }
+            a:hover { text-decoration: underline; }
+            .footer { margin-top: 25px; text-align: center; font-size: 0.9em; color: #777; }
           </style>
         </head>
         <body>
           <div class="container">
-            <div class="header">
-              <h1>🔥 NOVO LEAD QUALIFICADO - SITE AMIL</h1>
-              <h2>${lead.nome}</h2>
-            </div>
-            <div class="content">
-              
-              <div class="section">
-                <h3>👤 Dados de Contato</h3>
-                <div class="info-item"><strong>Nome:</strong> ${lead.nome}</div>
-                  <span><strong>WhatsApp:</strong> ${lead.whatsapp}</span>
-                  <a href="${whatsappLink}" target="_blank" class="whatsapp-button">Conversar</a>
-                </div>
-              </div>
-              
-              <div class="section">
-                <h3> Perfil Inicial</h3>
-                <div class="info-item"><strong>Possui CNPJ:</strong> ${lead.temCnpj ? "✅ SIM" : "❌ NÃO"}</div>
-                ${lead.numeroCnpj ? `<div class="info-item"><strong>CNPJ:</strong> ${lead.numeroCnpj}</div>` : ""}
-                ${lead.enquadramentoCnpj ? `<div class="info-item"><strong>Enquadramento:</strong> ${lead.enquadramentoCnpj}</div>` : ""}
-              </div>
-
-              ${dadosEmpresaHtml}
-              
-              <div class="section">
-                <h3>� Localização do Lead</h3>
-                <div class="info-item"><strong>Cidade:</strong> ${lead.cidade || 'Não informado'}</div>
-                <div class="info-item"><strong>Estado:</strong> ${lead.estado || 'Não informado'}</div>
-              </div>
-              
-              <div class="section">
-                <h3>�👨‍👩‍👧‍👦 Beneficiários para Cotação</h3>
-                ${lead.idadesBeneficiarios ? `<div class="info-item"><strong>Idades dos Beneficiários:</strong> ${lead.idadesBeneficiarios}</div>` : ""}
-                ${lead.idadesBeneficiarios ? `<div class="info-item"><strong>Total de Beneficiários:</strong> ${lead.idadesBeneficiarios.split(',').length} pessoa(s)</div>` : ""}
-              </div>
-              
-              <div class="section">
-                <h3>🏥 Situação do Plano de Saúde</h3>
-                <div class="info-item"><strong>Possui Plano Atual:</strong> ${lead.temPlanoAtual ? "✅ SIM" : "❌ NÃO"}</div>
-                ${lead.nomePlanoAtual ? `<div class="info-item"><strong>Operadora Atual:</strong> ${lead.nomePlanoAtual}</div>` : ""}
-                ${lead.valorPlanoAtual ? `<div class="info-item"><strong>Valor Mensal:</strong> ${lead.valorPlanoAtual}</div>` : ""}
-                ${lead.maiorDificuldade ? `<div class="info-item"><strong>Principal Dificuldade:</strong> ${lead.maiorDificuldade}</div>` : ""}
-                ${lead.interessePlano ? `<div class="info-item"><strong>Interesse no plano:</strong> ${lead.interessePlano}</div>` : ""}
-              </div>
-            </div>
+            ${emailBody}
             <div class="footer">
-              <p>Lead capturado em: ${new Date(lead._creationTime).toLocaleString("pt-BR", { timeZone: 'America/Sao_Paulo' })}</p>
-              <p><strong>Origem:</strong> Site AMIL - Chatbot Qualificado</p>
+              <p>E-mail enviado automaticamente pelo Chatbot Amil.</p>
             </div>
           </div>
         </body>
         </html>
       `;
 
-      try {
-        console.log("[sendLeadEmail] Preparando para enviar e-mail");
-        
-        const emailSubject = `🔥 Lead Site AMIL: ${lead.nome}${lead.temCnpj ? ` (${dadosEmpresa?.nome_fantasia || lead.numeroCnpj})` : ''}`;
-        console.log(`[sendLeadEmail] Assunto: ${emailSubject}`);
-        
-        const resend = new Resend(resendApiKey);
-        const emailResponse = await resend.emails.send({
-          from: emailFrom,
-          to: emailDestination,
-          subject: emailSubject,
-          html: emailContent,
-        });
-        
-        console.log("[sendLeadEmail] Resposta do serviço de e-mail:", JSON.stringify(emailResponse));
-        console.log("[sendLeadEmail] E-mail enviado com sucesso para lead:", args.leadId);
-        
-        // Atualização final do status do lead
-        await ctx.runMutation(api.leads.updateLead, {
-          leadId: args.leadId,
-          status: "enviado",
-        });
-        
-        console.log("[sendLeadEmail] Status do lead atualizado para 'enviado'");
-        
-        return { success: true };
-      } catch (error) {
-        console.error("[sendLeadEmail] ERRO ao enviar e-mail:", error);
-        
-        // Tentar registrar informações detalhadas sobre o erro
-        if (error instanceof Error) {
-          console.error("[sendLeadEmail] Mensagem de erro:", error.message);
-          console.error("[sendLeadEmail] Stack trace:", error.stack);
-        } else {
-          console.error("[sendLeadEmail] Erro não é uma instância de Error:", error);
-        }
-        
-        // Atualizar o status do lead para indicar falha no envio
-        try {
-          await ctx.runMutation(api.leads.updateLead, {
-            leadId: args.leadId,
-            status: "erro_email",
-          });
-          console.log("[sendLeadEmail] Status do lead atualizado para 'erro_email'");
-        } catch (updateError) {
-          console.error("[sendLeadEmail] Erro ao atualizar status do lead:", updateError);
-        }
-        
-        throw error;
-      }
+      const resend = new Resend(resendApiKey);
+
+      console.log("[sendLeadEmail] Enviando e-mail...");
+      await resend.emails.send({
+        from: emailFrom,
+        to: emailDestination,
+        subject: subject,
+        html: emailContent,
+      });
+
+      console.log("[sendLeadEmail] E-mail enviado com sucesso para:", emailDestination);
+
     } catch (error) {
-      console.error("[sendLeadEmail] ERRO - Falha no processamento do envio de e-mail:", error);
+      console.error("[sendLeadEmail] Falha ao processar a solicitação:", error);
+      // Lançar o erro novamente para que a chamada no frontend possa capturá-lo se necessário
       throw error;
     }
   },
