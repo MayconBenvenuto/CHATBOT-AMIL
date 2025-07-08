@@ -49,7 +49,9 @@ export const sendLeadEmail = action({
       console.log("[sendLeadEmail] Dados do lead obtidos com sucesso");
 
       // --- LÓGICA PARA LEAD MORNO VS COMPLETO ---
-      const subject = isWarmLead ? "Lead Morno: Novo Contato Parcial" : "Lead Amil: Novo Contato";
+      const subject = isWarmLead
+        ? "[AMIL] Lead PME Morno: Contato Parcial"
+        : "🔥 [AMIL] Lead PME Qualificado:";
       const leadStatus = isWarmLead ? "morno" : "completo";
 
       // Atualiza o status do lead no banco de dados
@@ -109,45 +111,44 @@ export const sendLeadEmail = action({
       // --- CONSTRUÇÃO DO CORPO DO E-MAIL ---
       const emailBody = isWarmLead
         ? `
-          <h2>Lead Morno Capturado</h2>
-          <p>Este lead iniciou a conversa mas não a concluiu. Seguem os dados parciais:</p>
-          <div class="section">
-            <h3>👤 Informações de Contato</h3>
-            <div class="info-item"><strong>Nome:</strong> ${lead.nome}</div>
-            <div class="info-item"><strong>WhatsApp:</strong> <a href="${whatsappLink}">${lead.whatsapp}</a></div>
-          </div>
+        <div style="background:#2196f3;padding:24px 16px 12px 16px;border-radius:12px 12px 0 0;text-align:left;">
+          <h1 style="color:#fff;font-size:2rem;margin:0;display:flex;align-items:center;gap:8px;">
+            <span style="font-size:2rem;">🧊</span> [AMIL] Lead Morno (Incompleto): ${lead.nome}
+          </h1>
+        </div>
+        <div style="background:#fffbe6;padding:16px 20px;margin-bottom:16px;border-radius:0 0 8px 8px;border:1px solid #ffe58f;">
+          <span style="color:#a8071a;font-weight:bold;">Atenção:</span> Este lead não completou o preenchimento no chatbot. Entre em contato para dar continuidade.
+        </div>
+        <div style="margin:16px 0 8px 0;font-size:1.1rem;font-weight:bold;color:#1e40af;display:flex;align-items:center;gap:8px;">
+          <span style="font-size:1.3rem;">📞</span> Dados de Contato
+        </div>
+        <div style="margin-bottom:8px;"><b>Nome:</b> ${lead.nome}</div>
+        <div style="margin-bottom:8px;"><b>WhatsApp:</b> <span style="color:#222;">${lead.whatsapp}</span> <a href="${whatsappLink}" style="background:#22c55e;color:#fff;padding:4px 16px;border-radius:6px;text-decoration:none;font-weight:bold;margin-left:8px;">Conversar</a></div>
+        <div style="color:#555;font-size:0.95rem;margin-top:16px;border-top:1px solid #bbb;padding-top:8px;">Lead capturado em: ${new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}</div>
         `
         : `
-          <h2>🎉 Novo Lead Qualificado!</h2>
-          <p>Um novo lead preencheu o formulário completo.</p>
-          
-          <div class="section">
-            <h3>👤 Informações de Contato</h3>
-            <div class="info-item"><strong>Nome:</strong> ${lead.nome}</div>
-            <div class="info-item"><strong>WhatsApp:</strong> <a href="${whatsappLink}">${lead.whatsapp}</a></div>
-            <div class="info-item"><strong>Email:</strong> ${lead.email}</div>
-          </div>
-
-          <div class="section">
-            <h3>📋 Detalhes da Cotação</h3>
-            <div class="info-item"><strong>Possui CNPJ?</strong> ${lead.temCnpj ? 'Sim' : 'Não'}</div>
-            ${lead.temCnpj ? `<div class="info-item"><strong>CNPJ:</strong> ${lead.numeroCnpj}</div>` : ''}
-            <div class="info-item"><strong>Tipo de Contratação:</strong> ${lead.enquadramentoCnpj || 'N/A'}</div>
-            <div class="info-item"><strong>Possui Funcionários?</strong> ${lead.temFuncionarios ? 'Sim' : 'Não'}</div>
-            <div class="info-item"><strong>Idade dos Beneficiários:</strong> ${lead.idadesBeneficiarios || 'N/A'}</div>
-          </div>
-
-          <div class="section">
-            <h3>🏥 Plano de Saúde Atual</h3>
-            <div class="info-item"><strong>Possui plano atual?</strong> ${lead.temPlanoAtual ? 'Sim' : 'Não'}</div>
-            ${lead.temPlanoAtual ? `
-              <div class="info-item"><strong>Operadora:</strong> ${lead.nomePlanoAtual || 'N/A'}</div>
-              <div class="info-item"><strong>Valor Mensal:</strong> ${lead.valorPlanoAtual || 'N/A'}</div>
-              <div class="info-item"><strong>Maior Dificuldade:</strong> ${lead.maiorDificuldade || 'N/A'}</div>
-            ` : ''}
-          </div>
-          
-          ${dadosEmpresaHtml}
+        <div style="background:#2196f3;padding:24px 16px 12px 16px;border-radius:12px 12px 0 0;text-align:left;">
+          <h1 style="color:#fff;font-size:2rem;margin:0;display:flex;align-items:center;gap:8px;">
+            <span style="font-size:2rem;">🧊</span> [AMIL] Lead PME Qualificado: ${lead.nome}
+          </h1>
+        </div>
+        <div style="margin:16px 0 8px 0;font-size:1.1rem;font-weight:bold;color:#1e40af;display:flex;align-items:center;gap:8px;">
+          <span style="font-size:1.3rem;">📞</span> Dados de Contato
+        </div>
+        <div style="margin-bottom:8px;"><b>Nome:</b> ${lead.nome}</div>
+        <div style="margin-bottom:8px;"><b>WhatsApp:</b> <span style="color:#222;">${lead.whatsapp}</span> <a href="${whatsappLink}" style="background:#22c55e;color:#fff;padding:4px 16px;border-radius:6px;text-decoration:none;font-weight:bold;margin-left:8px;">Conversar</a></div>
+        <div style="margin-bottom:8px;"><b>Email:</b> ${lead.email}</div>
+        <div style="margin-bottom:8px;"><b>Possui CNPJ?</b> ${lead.temCnpj ? 'Sim' : 'Não'}</div>
+        ${lead.temCnpj ? `<div style="margin-bottom:8px;"><b>CNPJ:</b> ${lead.numeroCnpj}</div>` : ''}
+        <div style="margin-bottom:8px;"><b>Tipo de Contratação:</b> ${lead.enquadramentoCnpj || 'N/A'}</div>
+        <div style="margin-bottom:8px;"><b>Possui Funcionários?</b> ${lead.temFuncionarios ? 'Sim' : 'Não'}</div>
+        <div style="margin-bottom:8px;"><b>Idade dos Beneficiários:</b> ${lead.idadesBeneficiarios || 'N/A'}</div>
+        <div style="margin-bottom:8px;"><b>Possui plano atual?</b> ${lead.temPlanoAtual ? 'Sim' : 'Não'}</div>
+        ${lead.temPlanoAtual ? `<div style="margin-bottom:8px;"><b>Operadora:</b> ${lead.nomePlanoAtual || 'N/A'}</div>` : ''}
+        ${lead.temPlanoAtual ? `<div style="margin-bottom:8px;"><b>Valor Mensal:</b> ${lead.valorPlanoAtual || 'N/A'}</div>` : ''}
+        ${lead.temPlanoAtual ? `<div style="margin-bottom:8px;"><b>Maior Dificuldade:</b> ${lead.maiorDificuldade || 'N/A'}</div>` : ''}
+        ${dadosEmpresaHtml}
+        <div style="color:#555;font-size:0.95rem;margin-top:16px;border-top:1px solid #bbb;padding-top:8px;">Lead capturado em: ${new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}</div>
         `;
 
       const emailContent = `
