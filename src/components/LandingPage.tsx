@@ -12,6 +12,12 @@ interface LandingPageProps {
 export default function LandingPage({ onOpenChatbot }: LandingPageProps) {  
   // Função para abrir o WhatsApp com mensagem predefinida
   const openWhatsApp = () => {
+    if ((window as any).fbq) {
+      (window as any).fbq('track', 'ButtonClick', {
+        buttonId: 'whatsapp-button',
+        buttonName: 'WhatsApp Contact'
+      });
+    }
     const phone = "5581992998558"; // Formato: código do país + DDD + número
     const message = encodeURIComponent("Olá! Gostaria de mais informações e valores dos planos Amil..");
     
@@ -19,7 +25,7 @@ export default function LandingPage({ onOpenChatbot }: LandingPageProps) {
   };
 
   // Função para abrir chatbot com tracking do Facebook Pixel
-  const handleOpenChatbot = (buttonLocation: string) => {
+  const handleOpenChatbot = () => {
     onOpenChatbot();
   };
 
@@ -57,7 +63,7 @@ export default function LandingPage({ onOpenChatbot }: LandingPageProps) {
               <a href="#contato" className="text-gray-700 hover:text-amil-blue text-sm sm:text-base">Contato</a>
             </nav>
             <button
-              onClick={() => handleOpenChatbot('Header')}
+              onClick={() => handleOpenChatbot()}
               className="bg-amil-blue text-white px-2 sm:px-3 py-1 sm:py-2 rounded-lg hover:bg-primary-hover transition-colors font-semibold w-auto text-[10px] xs:text-xs sm:text-base"
               data-testid="solicitar-cotacao-header"
               data-fb-track="lead"
@@ -82,7 +88,7 @@ export default function LandingPage({ onOpenChatbot }: LandingPageProps) {
               </p>
               <div className="flex flex-col xs:flex-row gap-2 sm:gap-4">
                 <button
-                  onClick={() => handleOpenChatbot('Hero Solicitar')}
+                  onClick={() => handleOpenChatbot()}
                   className="bg-amil-blue text-white px-3 xs:px-4 sm:px-6 lg:px-8 py-2 xs:py-2.5 sm:py-3 lg:py-4 rounded-lg hover:bg-primary-hover transition-colors font-semibold text-xs xs:text-sm sm:text-base lg:text-lg w-full xs:w-auto"
                   data-testid="solicitar-cotacao-hero"
                   data-fb-track="lead"
@@ -90,7 +96,7 @@ export default function LandingPage({ onOpenChatbot }: LandingPageProps) {
                   Solicitar Cotação
                 </button>
                 <button
-                  onClick={() => handleOpenChatbot('Hero Saiba Mais')}
+                  onClick={() => handleOpenChatbot()}
                   className="border border-white xs:border-2 text-white px-3 xs:px-4 sm:px-6 lg:px-8 py-2 xs:py-2.5 sm:py-3 lg:py-4 rounded-lg hover:bg-white hover:text-amil-blue transition-colors font-semibold text-xs xs:text-sm sm:text-base lg:text-lg w-full xs:w-auto"
                   data-testid="saiba-mais-hero"
                   data-fb-track="lead"
