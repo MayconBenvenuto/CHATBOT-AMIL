@@ -434,16 +434,6 @@ export default function Chatbot({ onClose }: ChatbotProps) {
           await sendEmail({ leadId: currentLeadId });
           console.log("E-mail para lead completo enviado com sucesso.");
 
-          // Dispara evento do Facebook Pixel para lead qualificado
-          if (typeof window !== 'undefined' && (window as any).fbq) {
-            (window as any).fbq('track', 'LeadQualificado', {
-              content_category: 'Lead Completo',
-              content_name: 'Chatbot Finalizado com Sucesso',
-              value: 50,
-              currency: 'BRL'
-            });
-          }
-          
           toast.success("✅ Informações enviadas com sucesso! Em breve nosso consultor entrará em contato.");
 
         } catch (emailError: any) {

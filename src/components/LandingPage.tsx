@@ -15,31 +15,11 @@ export default function LandingPage({ onOpenChatbot }: LandingPageProps) {
     const phone = "5581992998558"; // Formato: código do país + DDD + número
     const message = encodeURIComponent("Olá! Gostaria de mais informações e valores dos planos Amil..");
     
-    // Dispara evento do Facebook Pixel
-    if (typeof window !== 'undefined' && (window as any).fbq) {
-      (window as any).fbq('track', 'Contact', {
-        content_category: 'WhatsApp',
-        content_name: 'Botão WhatsApp Flutuante',
-        value: 1,
-        currency: 'BRL'
-      });
-    }
-    
     window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
   };
 
   // Função para abrir chatbot com tracking do Facebook Pixel
   const handleOpenChatbot = (buttonLocation: string) => {
-    // Dispara evento do Facebook Pixel
-    if (typeof window !== 'undefined' && (window as any).fbq) {
-      (window as any).fbq('track', 'Lead', {
-        content_category: 'Chatbot',
-        content_name: `Botão ${buttonLocation}`,
-        value: 10,
-        currency: 'BRL'
-      });
-    }
-    
     onOpenChatbot();
   };
 

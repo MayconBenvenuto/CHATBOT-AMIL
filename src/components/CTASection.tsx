@@ -1,16 +1,6 @@
 export default function CTASection({ onOpenChatbot }: { onOpenChatbot: () => void }) {
   // Função para abrir chatbot com tracking do Facebook Pixel
   const handleOpenChatbot = () => {
-    // Dispara evento do Facebook Pixel
-    if (typeof window !== 'undefined' && (window as any).fbq) {
-      (window as any).fbq('track', 'Lead', {
-        content_category: 'Chatbot',
-        content_name: 'Botão CTA Section',
-        value: 15,
-        currency: 'BRL'
-      });
-    }
-    
     onOpenChatbot();
   };
 
