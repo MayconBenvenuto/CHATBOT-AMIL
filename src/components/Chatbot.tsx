@@ -127,7 +127,7 @@ export default function Chatbot({ onClose }: ChatbotProps) {
   useEffect(() => {
     // A função de limpeza é executada quando o componente é desmontado (fechado)
     return () => {
-      if (leadId && chatData.nome && chatData.whatsapp && step !== "finalizado") {
+      if (leadId && chatData.nome && chatData.whatsapp && step === "finalizado") {
         console.log(`[Chatbot Unmount] Lead morno detectado: ${leadId}. Enviando...`);
         // Envia o email para o lead morno sem feedback para o usuário
         sendEmail({ leadId, isWarmLead: true }).catch((error) => {
