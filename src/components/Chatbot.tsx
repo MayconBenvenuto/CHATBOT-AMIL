@@ -118,6 +118,7 @@ export default function Chatbot({ onClose }: ChatbotProps) {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const isManualClose = useRef(false); // Flag para rastrear se o fechamento foi manual
 
   const createLead = useMutation(api.leads.createLead);
   const updateLead = useMutation(api.leads.updateLead);
@@ -127,16 +128,30 @@ export default function Chatbot({ onClose }: ChatbotProps) {
   useEffect(() => {
     // A função de limpeza é executada quando o componente é desmontado (fechado)
     return () => {
-      if (leadId && chatData.nome && chatData.whatsapp && step === "finalizado") {
+      console.log(`[Chatbot Unmount] Verificando condições para lead morno:`, {
+        leadId,
+        nome: chatData.nome,
+        whatsapp: chatData.whatsapp,
+        step,
+        isManualClose: isManualClose.current
+      });
+      
+      // Só envia email de lead morno se:
+      // 1. Existe leadId, nome e whatsapp
+      // 2. O chat NÃO foi finalizado (step !== "finalizado")
+      // 3. O fechamento foi manual (isManualClose.current = true)
+      if (leadId && chatData.nome && chatData.whatsapp && step !== "finalizado" && isManualClose.current) {
         console.log(`[Chatbot Unmount] Lead morno detectado: ${leadId}. Enviando...`);
-        // Envia o email para o lead morno sem feedback para o usuário
+        // Envia o email para o lead morno
         sendEmail({ leadId, isWarmLead: true }).catch((error) => {
           // Apenas loga o erro no console, não exibe para o usuário
           console.error("[Chatbot Unmount] Erro ao enviar email de lead morno:", error);
         });
+      } else {
+        console.log(`[Chatbot Unmount] Condições não atendidas para lead morno`);
       }
     };
-  }, [leadId, chatData, step, sendEmail]);
+  });
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -183,6 +198,24 @@ export default function Chatbot({ onClose }: ChatbotProps) {
       dispatch({ type: "SET_IS_TYPING", payload: false });
       dispatch({ type: "ADD_MESSAGE", payload: { type: "bot", text, options } });
     }, 1500);
+  };
+
+  // Função para lidar com o fechamento manual do chatbot
+  const handleManualClose = () => {
+    console.log(`[handleManualClose] Fechamento manual detectado no step: ${step}`);
+    // Marca que o fechamento foi manual
+    isManualClose.current = true;
+    // Chama a função original de fechamento
+    onClose();
+  };
+
+  // Função para finalização natural do chatbot (sem envio de lead morno)
+  const handleNaturalFinish = () => {
+    console.log("[handleNaturalFinish] Finalização natural do chatbot");
+    // Não marca como fechamento manual
+    isManualClose.current = false;
+    // Chama a função original de fechamento após a conclusão
+    onClose();
   };
   
   useEffect(() => {
@@ -473,7 +506,7 @@ export default function Chatbot({ onClose }: ChatbotProps) {
       <div className="bg-white rounded-2xl w-full max-w-xs sm:max-w-sm md:max-w-md h-[70vh] max-h-[90vh] flex flex-col shadow-2xl fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 transition-all duration-300"
         style={{width: '100%', maxWidth: '350px'}}>
         {/* Header */}
-        <ChatbotHeader onClose={onClose} progress={getProgressPercentage()} />
+        <ChatbotHeader onClose={handleManualClose} progress={getProgressPercentage()} />
         <ChatbotMessages
           messages={messages}
           step={step as string}
@@ -498,7 +531,7 @@ export default function Chatbot({ onClose }: ChatbotProps) {
 
         {/* Final CTA */}
         {step === "finalizado" && (
-          <ChatbotFinalCTA onClose={onClose} />
+          <ChatbotFinalCTA onClose={handleNaturalFinish} />
         )}
       </div>
     </div>
