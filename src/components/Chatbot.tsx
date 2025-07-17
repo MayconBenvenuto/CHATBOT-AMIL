@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useRef } from "react";
+import { useEffect, useReducer, useRef, useCallback } from "react";
 import { useAction, useMutation } from "convex/react";
 import { toast } from "sonner";
 import { api } from "../../convex/_generated/api";
@@ -7,6 +7,7 @@ import ChatbotHeader from "./ChatbotHeader";
 import ChatbotMessages from "./ChatbotMessages";
 import ChatbotInput from "./ChatbotInput";
 import ChatbotFinalCTA from "./ChatbotFinalCTA";
+import { useCookieConsent, useFacebookPixel } from "../hooks/useFacebookPixel";
 
 // --- INTERFACES E TIPOS ---
 interface ChatbotProps {
@@ -125,6 +126,10 @@ export default function Chatbot({ onClose, fullPage = false }: ChatbotProps) {
   const updateLead = useMutation(api.leads.updateLead);
   const sendEmail = useAction(api.email.sendLeadEmail);
   
+  // Hook para Facebook Pixel
+  const { hasConsent } = useCookieConsent();
+  const { trackEvent } = useFacebookPixel(hasConsent);
+  
   // Efeito para capturar o abandono do chat (lead morno)
   useEffect(() => {
     // A função de limpeza é executada quando o componente é desmontado (fechado)
@@ -159,7 +164,7 @@ export default function Chatbot({ onClose, fullPage = false }: ChatbotProps) {
   };
 
   // Função para buscar localização via IP
-  const fetchLocation = async () => {
+  const fetchLocation = useCallback(async () => {
     try {
       const response = await fetch("https://ipapi.co/json/");
       const data = await response.json();
@@ -169,17 +174,15 @@ export default function Chatbot({ onClose, fullPage = false }: ChatbotProps) {
           type: "SET_LOCATION",
           payload: { cidade: city, estado: region_code },
         });
-        if ((window as any).fbq) {
-          (window as any).fbq("track", "FindLocation", {
-            city,
-            region: region_code,
-          });
-        }
+        trackEvent("FindLocation", {
+          city,
+          region: region_code,
+        });
       }
     } catch (error) {
       console.error("Erro ao buscar localização:", error);
     }
-  };
+  }, [trackEvent]);
 
   useEffect(() => {
     scrollToBottom();
@@ -191,7 +194,7 @@ export default function Chatbot({ onClose, fullPage = false }: ChatbotProps) {
   // useEffect para capturar localização automaticamente
   useEffect(() => {
     void fetchLocation();
-  }, []);
+  }, [fetchLocation]);
 
   const addBotMessage = (text: string, options?: string[]) => {
     dispatch({ type: "SET_IS_TYPING", payload: true });

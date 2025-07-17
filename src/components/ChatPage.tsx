@@ -2,11 +2,7 @@ import { useState, useEffect } from "react";
 import { ArrowLeft, Phone, Video, MoreVertical, Shield } from "lucide-react";
 import Chatbot from "./Chatbot";
 import CookieConsent from "./CookieConsent";
-
-
-// Adiciona o Pixel do Facebook ao carregar a página
-const PIXEL_ID = "1648153312538580"; // ID do pixel do Facebook
-
+import { useCookieConsent, useFacebookPixel } from "../hooks/useFacebookPixel";
 
 interface ChatPageProps {
   onBack: () => void;
@@ -15,51 +11,16 @@ interface ChatPageProps {
 export default function ChatPage({ onBack }: ChatPageProps) {
   const [isChatbotOpen, setIsChatbotOpen] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
-  const [hasConsent, setHasConsent] = useState(false);
-  const [showCookieConsent, setShowCookieConsent] = useState(false);
-
-  // Função para carregar o pixel após consentimento
-  const loadFacebookPixel = () => {
-    if (!(window as any).fbq) {
-      // Cria o script do pixel
-      const script = document.createElement('script');
-      script.async = true;
-      script.src = 'https://connect.facebook.net/en_US/fbevents.js';
-      document.head.appendChild(script);
-
-      // Inicializa o fbq
-      (window as any).fbq = function (...args: any[]) {
-        ((window as any).fbq.q = (window as any).fbq.q || []).push(args);
-      };
-      (window as any).fbq.l = +new Date();
-      (window as any).fbq('init', PIXEL_ID);
-      (window as any).fbq('track', 'PageView');
-    } else {
-      (window as any).fbq('track', 'PageView');
-    }
-  };
-
-  // Verificar consentimento ao carregar
-  useEffect(() => {
-    const consent = localStorage.getItem('cookie-consent');
-    if (consent === 'accepted') {
-      setHasConsent(true);
-      loadFacebookPixel();
-    } else if (!consent) {
-      setShowCookieConsent(true);
-    }
-  }, []);
+  
+  const { hasConsent, showConsent, acceptCookies, rejectCookies } = useCookieConsent();
+  useFacebookPixel(hasConsent);
 
   const handleAcceptCookies = () => {
-    setHasConsent(true);
-    setShowCookieConsent(false);
-    loadFacebookPixel();
+    acceptCookies();
   };
 
   const handleRejectCookies = () => {
-    setShowCookieConsent(false);
-    loadFacebookPixel()
-    // Não carrega o pixel se rejeitado
+    rejectCookies();
   };
 
   const handleCloseChatbot = () => {
@@ -174,7 +135,7 @@ export default function ChatPage({ onBack }: ChatPageProps) {
       </div>
 
       {/* Banner de Consentimento de Cookies */}
-      {showCookieConsent && (
+      {showConsent && (
         <CookieConsent 
           onAccept={handleAcceptCookies}
           onReject={handleRejectCookies}

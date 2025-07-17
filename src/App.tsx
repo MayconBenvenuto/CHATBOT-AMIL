@@ -4,10 +4,21 @@ import { Toaster } from "sonner";
 import LandingPage from "./components/LandingPage";
 import Chatbot from "./components/Chatbot";
 import ChatPage from "./components/ChatPage";
+import { useFacebookPixel, useCookieConsent } from "./hooks/useFacebookPixel";
 
 declare global {
   interface Window {
-    fbq: (...args: any[]) => void;
+    fbq: {
+      (...args: any[]): void;
+      q?: any[];
+      l?: number;
+      loaded?: boolean;
+      version?: string;
+      queue?: any[];
+      callMethod?: (...args: any[]) => void;
+    };
+    _fbq?: any;
+    initFacebookPixel?: () => void;
   }
 }
 
@@ -26,13 +37,15 @@ export default function App() {
 function HomePage() {
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
   const navigate = useNavigate();
+  const { hasConsent } = useCookieConsent();
+  const { trackCustomEvent } = useFacebookPixel(hasConsent);
 
   // Detectar localização do usuário quando o componente carrega
   useEffect(() => {
-    if (navigator.geolocation && window.fbq) {
+    if (navigator.geolocation && hasConsent) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          window.fbq('trackCustom', 'FindLocation', {
+          trackCustomEvent('FindLocation', {
             content_name: 'User Location Found',
             content_category: 'geolocation',
             latitude: position.coords.latitude,
@@ -41,7 +54,7 @@ function HomePage() {
           });
         },
         (error) => {
-          window.fbq('trackCustom', 'FindLocation', {
+          trackCustomEvent('FindLocation', {
             content_name: 'Location Permission Denied',
             content_category: 'geolocation',
             error: error.message,
@@ -54,19 +67,17 @@ function HomePage() {
         }
       );
     }
-  }, []);
+  }, [hasConsent, trackCustomEvent]);
 
   const handleOpenChatbot = () => {
     // Disparar evento Lead quando o chatbot é aberto
-    if (window.fbq) {
-      window.fbq('trackCustom', 'Lead', {
-        value: 10,
-        currency: 'BRL',
-        content_name: 'Chatbot Open',
-        content_category: 'interaction',
-        source: 'landing_page_button'
-      });
-    }
+    trackCustomEvent('Lead', {
+      value: 10,
+      currency: 'BRL',
+      content_name: 'Chatbot Open',
+      content_category: 'interaction',
+      source: 'landing_page_button'
+    });
     
     // Navegar para a página de chat
     void navigate('/chat');

@@ -4,20 +4,23 @@ import TestimonialsSection from "./TestimonialsSection";
 import CTASection from "./CTASection";
 import Footer from "./Footer";
 import { CheckCircle } from "lucide-react";
+import { useCookieConsent, useFacebookPixel } from "../hooks/useFacebookPixel";
 
 interface LandingPageProps {
   onOpenChatbot: () => void;
 }
 
 export default function LandingPage({ onOpenChatbot }: LandingPageProps) {  
+  const { hasConsent } = useCookieConsent();
+  const { trackEvent } = useFacebookPixel(hasConsent);
+
   // Função para abrir o WhatsApp com mensagem predefinida
   const openWhatsApp = () => {
-    if ((window as any).fbq) {
-      (window as any).fbq('track', 'ButtonClick', {
-        buttonId: 'whatsapp-button',
-        buttonName: 'WhatsApp Contact'
-      });
-    }
+    trackEvent('ButtonClick', {
+      buttonId: 'whatsapp-button',
+      buttonName: 'WhatsApp Contact'
+    });
+    
     const phone = "5581992998558"; // Formato: código do país + DDD + número
     const message = encodeURIComponent("Olá! Gostaria de mais informações e valores dos planos Amil..");
     
