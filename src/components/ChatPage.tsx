@@ -58,6 +58,7 @@ export default function ChatPage({ onBack }: ChatPageProps) {
 
   const handleRejectCookies = () => {
     setShowCookieConsent(false);
+    loadFacebookPixel()
     // Não carrega o pixel se rejeitado
   };
 
