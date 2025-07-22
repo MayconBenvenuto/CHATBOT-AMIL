@@ -128,7 +128,7 @@ export default function Chatbot({ onClose, fullPage = false }: ChatbotProps) {
   
   // Hook para Facebook Pixel
   const { hasConsent } = useCookieConsent();
-  const { trackEvent } = useFacebookPixel(hasConsent);
+  const { trackEvent, trackLeadQualificado } = useFacebookPixel(hasConsent);
   
   // Efeito para capturar o abandono do chat (lead morno)
   useEffect(() => {
@@ -472,6 +472,18 @@ export default function Chatbot({ onClose, fullPage = false }: ChatbotProps) {
           console.log("E-mail para lead completo enviado com sucesso.");
 
           toast.success("✅ Informações enviadas com sucesso! Em breve nosso consultor entrará em contato.");
+
+          // Disparar evento de lead qualificado para o Facebook Pixel
+          trackLeadQualificado({
+            lead_id: currentLeadId,
+            nome: newData.nome,
+            whatsapp: newData.whatsapp,
+            tem_plano_atual: newData.temPlanoAtual,
+            valor_plano_atual: newData.valorPlanoAtual,
+            cidade: newData.cidade,
+            estado: newData.estado,
+            timestamp: new Date().toISOString()
+          });
 
         } catch (emailError: any) {
           console.error("Erro ao enviar e-mail:", emailError);

@@ -16,6 +16,7 @@ declare global {
     };
     _fbq?: any;
     initFacebookPixel?: () => void;
+    trackLeadQualificado?: (leadData?: any) => void;
   }
 }
 
@@ -23,6 +24,7 @@ interface FacebookPixelHook {
   isLoaded: boolean;
   trackEvent: (eventName: string, parameters?: any) => void;
   trackCustomEvent: (eventName: string, parameters?: any) => void;
+  trackLeadQualificado: (leadData?: any) => void;
 }
 
 export const useFacebookPixel = (hasConsent: boolean = false): FacebookPixelHook => {
@@ -100,10 +102,29 @@ export const useFacebookPixel = (hasConsent: boolean = false): FacebookPixelHook
     }
   };
 
+  const trackLeadQualificado = (leadData?: any) => {
+    if (isLoaded && window.trackLeadQualificado && typeof window.trackLeadQualificado === 'function') {
+      console.log(`📊 Tracking lead qualificado`, leadData);
+      window.trackLeadQualificado(leadData);
+    } else if (isLoaded && window.fbq && typeof window.fbq === 'function') {
+      // Fallback direto com fbq se a função global não estiver disponível
+      console.log(`📊 Tracking lead qualificado (fallback)`, leadData);
+      window.fbq('trackCustom', 'leadQualificado', {
+        content_name: 'Chatbot Concluído',
+        content_category: 'Seguros Empresariais',
+        source: 'chatbot',
+        ...leadData
+      });
+    } else {
+      console.warn(`⚠️ Tentativa de track lead qualificado mas pixel não está carregado`);
+    }
+  };
+
   return {
     isLoaded,
     trackEvent,
-    trackCustomEvent
+    trackCustomEvent,
+    trackLeadQualificado
   };
 };
 

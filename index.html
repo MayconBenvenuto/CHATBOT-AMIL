@@ -27,6 +27,21 @@
         console.log('✅ Facebook Pixel inicializado com sucesso!');
       };
       
+      // Função para disparar evento de lead qualificado
+      window.trackLeadQualificado = function(leadData = {}) {
+        if (typeof fbq === 'function') {
+          fbq('trackCustom', 'leadQualificado', {
+            content_name: 'Chatbot Concluído',
+            content_category: 'Seguros Empresariais',
+            source: 'chatbot',
+            ...leadData
+          });
+          console.log('✅ Evento leadQualificado disparado!', leadData);
+        } else {
+          console.warn('⚠️ fbq não disponível para disparar evento leadQualificado');
+        }
+      };
+      
       // Verificar consentimento ao carregar
       document.addEventListener('DOMContentLoaded', function() {
         const consent = localStorage.getItem('cookie-consent');
