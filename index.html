@@ -11,53 +11,54 @@
     <meta property="og:image" content="/og-preview.png" />
     
     <!-- Meta Pixel Code -->
+    <!-- Meta Pixel Code -->
     <script>
-      !function(f,b,e,v,n,t,s)
-      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-      n.queue=[];t=b.createElement(e);t.async=!0;
-      t.src=v;s=b.getElementsByTagName(e)[0];
-      s.parentNode.insertBefore(t,s)}(window, document,'script',
-      'https://connect.facebook.net/en_US/fbevents.js');
-      
-      // Função para inicializar o pixel quando houver consentimento
-      window.initFacebookPixel = function() {
-        fbq('init', '1648153312538580');
-        fbq('track', 'PageView');
-        console.log('✅ Facebook Pixel inicializado com sucesso!');
-      };
-      
-      // Função para disparar evento de lead qualificado
-      window.trackLeadQualificado = function(leadData = {}) {
-        if (typeof fbq === 'function') {
-          fbq('trackCustom', 'leadQualificado', {
-            content_name: 'Chatbot Concluído',
-            content_category: 'Seguros Empresariais',
-            source: 'chatbot',
-            ...leadData
-          });
-          console.log('✅ Evento leadQualificado disparado!', leadData);
-        } else {
-          console.warn('⚠️ fbq não disponível para disparar evento leadQualificado');
-        }
-      };
-      
-      // Verificar consentimento ao carregar
-      document.addEventListener('DOMContentLoaded', function() {
-        const consent = localStorage.getItem('cookie-consent');
-        if (consent === 'accepted') {
-          window.initFacebookPixel();
-        }
-      });
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    
+    // Função para inicializar o pixel quando houver consentimento
+    window.initFacebookPixel = function() {
+      fbq('init', '1446272879856627');
+      fbq('track', 'PageView');
+      console.log('✅ Facebook Pixel inicializado com sucesso!');
+    };
+    
+    // Função para disparar evento de lead qualificado
+    window.trackLeadQualificado = function(leadData = {}) {
+      if (typeof fbq === 'function') {
+        fbq('trackCustom', 'leadQualificado', {
+          content_name: 'Chatbot Concluído',
+          content_category: 'Seguros Empresariais',
+          source: 'chatbot',
+          ...leadData
+        });
+        console.log('✅ Evento leadQualificado disparado!', leadData);
+      } else {
+        console.warn('⚠️ fbq não disponível para disparar evento leadQualificado');
+      }
+    };
+    
+    // Verificar consentimento ao carregar
+    document.addEventListener('DOMContentLoaded', function() {
+      const consent = localStorage.getItem('cookie-consent');
+      if (consent === 'accepted') {
+        window.initFacebookPixel();
+      }
+    });
     </script>
     <!-- End Meta Pixel Code -->
     
   </head>
   <body>
-    <noscript><img height="1" width="1" style="display:none"
-    src="https://www.facebook.com/tr?id=1648153312538580&ev=PageView&noscript=1"
-    /></noscript>
+  <noscript><img height="1" width="1" style="display:none"
+  src="https://www.facebook.com/tr?id=1446272879856627&ev=PageView&noscript=1"
+  /></noscript>
     
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
